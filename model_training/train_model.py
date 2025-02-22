@@ -124,7 +124,7 @@ lr_reduction = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, ver
 pickle.dump(tokenizer, open("tokenizer.pkl", "wb"))
 pickle.dump(encoder, open("encoder.pkl", "wb"))
 
-history = model.fit(X_train, y_train, epochs=10, verbose=1, batch_size=32, validation_data=(X_val, y_val))
+history = model.fit(X_train, y_train, epochs=20, verbose=1, batch_size=8, validation_data=(X_val, y_val))
 model.save('emotion_model.h5')
 
 # Проверочка
