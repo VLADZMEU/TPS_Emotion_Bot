@@ -36,9 +36,9 @@ nltk.download('averaged_perceptron_tagger')
 nltk.download('wordnet')
 stop_words = stopwords.words("english")
 # Загрузка данных
-df_train = pd.read_csv('d:/Files/Otbor_TPS/train.txt', names=['Text', 'Emotion'], sep=';')
-df_val = pd.read_csv('d:/Files/Otbor_TPS/val.txt', names=['Text', 'Emotion'], sep=';')
-df_test = pd.read_csv('d:/Files/Otbor_TPS/test.txt', names=['Text', 'Emotion'], sep=';')
+df_train = pd.read_csv('train.txt', names=['Text', 'Emotion'], sep=';')
+df_val = pd.read_csv('val.txt', names=['Text', 'Emotion'], sep=';')
+df_test = pd.read_csv('test.txt', names=['Text', 'Emotion'], sep=';')
 
 # Функция для нормализации текста
 def normalize_text(input_data):
