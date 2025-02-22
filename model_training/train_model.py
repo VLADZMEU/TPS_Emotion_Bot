@@ -3,13 +3,17 @@ import nltk
 import numpy as np
 import pandas as pd
 import keras
+import joblib
+import os
 import pickle
+
 import matplotlib.pyplot as plt
 from nltk.tag import pos_tag
 from nltk.corpus import wordnet
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from transformers import BertTokenizer
+
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Sequential
@@ -31,6 +35,7 @@ nltk.download('averaged_perceptron_tagger_eng')
 nltk.download('wordnet')
 
 stop_words = stopwords.words("english")
+
 
 df_train = pd.read_csv('d:/Files/Otbor_TPS/train.txt', names=['Text', 'Emotion'], sep=';')
 df_val = pd.read_csv('d:/Files/Otbor_TPS/val.txt', names=['Text', 'Emotion'], sep=';')
@@ -116,16 +121,19 @@ model.add(Bidirectional(LSTM(128, dropout=0.2, recurrent_dropout=0.2)))
 model.add(Dense(len(unique_classes), activation='softmax'))
 model.summary()
 
+
+
 optimizer = Adam(learning_rate=0.001)
 model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=["accuracy"])
 
 lr_reduction = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
 
-pickle.dump(tokenizer, open("tokenizer.pkl", "wb"))
-pickle.dump(encoder, open("encoder.pkl", "wb"))
+pickle.dump(tokenizer, open("../telegram_bot/tokenizer.pkl", "wb"))
+pickle.dump(encoder, open("../telegram_bot/encoder.pkl", "wb"))
 
-history = model.fit(X_train, y_train, epochs=20, verbose=1, batch_size=8, validation_data=(X_val, y_val))
-model.save('emotion_model.h5')
+history = model.fit(X_train, y_train, epochs=10, verbose=1, batch_size=16, validation_data=(X_val, y_val))
+
+model.save("emotion_model.h5")
 
 # Проверочка
 input_text = "I feel hurt because he cheated on me with his best friend"
