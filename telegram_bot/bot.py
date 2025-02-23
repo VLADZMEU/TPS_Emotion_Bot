@@ -18,7 +18,7 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
-# Функция для очистки текста
+
 def normalize_text(text):
     text = re.sub(r'https?://\S+|www\.\S+', '', text)
     text = re.sub(r'[^a-zA-Z\s]', '', text)
@@ -29,10 +29,12 @@ def normalize_text(text):
     text = " ".join(lemmatizer.lemmatize(word) for word in text.split())
     return text
 
+
 # Загрузка модели
 def load_model(model_path):
     model = tf.keras.models.load_model(model_path)
     return model
+
 
 # Подготовка текста
 def prepare_text(text, tokenizer, max_length):
@@ -41,22 +43,21 @@ def prepare_text(text, tokenizer, max_length):
     padded_sequence = pad_sequences(sequence, maxlen=max_length, padding='post', truncating='post')
     return padded_sequence
 
-# Предсказание эмоции с вероятностями для всех классов
 def predict_emotion_with_probability(model, text, tokenizer, max_length, encoder):
     padded_sequence = prepare_text(text, tokenizer, max_length)
     prediction = model.predict(padded_sequence)
-    probabilities = prediction[0]  # Вероятности для всех классов
-    predicted_index = np.argmax(probabilities)  # Индекс предсказанного класса
+    probabilities = prediction[0]
+    predicted_index = np.argmax(probabilities)
 
-    # Преобразуем индекс в текстовую метку
-    predicted_label = encoder.inverse_transform([predicted_index])[0]  # Предсказанная эмоция
+    predicted_label = encoder.inverse_transform([predicted_index])[0]
     return predicted_label, probabilities
 
-# Обработчик команды /start
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('Привет! Я бот для анализа настроения текста. Отправь мне текст, и я скажу, какое у него настроение.')
 
-# Обработчик текстовых сообщений
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(
+        'Привет! Я бот для анализа настроения текста. Отправь мне текст, и я скажу, какое у него настроение.')
+
+
 async def send_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     model_path = "emotion_model.h5"
     model = load_model(model_path)
@@ -65,19 +66,16 @@ async def send_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     max_length = 40
     text = update.message.text
 
-    # Получаем эмоцию и вероятности для всех классов
     emotion, probabilities = predict_emotion_with_probability(model, text, tokenizer, max_length, encoder)
 
-    # Формируем ответ с дополнительной информацией
-    response = f"Настроение текста: **{emotion}**\n\n"  # Основная эмоция
+    response = f"Настроение текста: **{emotion}**\n\n"
 
-    # Вероятности для всех эмоций
     response += "Вероятности для всех эмоций:\n"
     for i, label in enumerate(encoder.classes_):
         response += f"- {label}: {probabilities[i]:.2f}\n"
 
     # Топ-3 наиболее вероятных эмоций
-    top_indices = np.argsort(probabilities)[-3:][::-1]  # Индексы топ-3 эмоций
+    top_indices = np.argsort(probabilities)[-3:][::-1]
     response += "\nТоп-3 наиболее вероятных эмоций:\n"
     for idx in top_indices:
         response += f"- {encoder.classes_[idx]}: {probabilities[idx]:.2f}\n"
@@ -89,12 +87,14 @@ async def send_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Отправка ответа
     await update.message.reply_text(response)
 
+
 # Основная функция
 async def main() -> None:
     application = ApplicationBuilder().token("8143120396:AAHqHWcdpkj7ApJ-BwXLlZuIA5Cwaxvw8t4").build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, send_text))
     await application.run_polling()
+
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
